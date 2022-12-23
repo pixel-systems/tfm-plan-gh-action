@@ -1,0 +1,55 @@
+name: continuous-integration
+on:
+  pull_request:
+    branches: [main]
+jobs:
+  pack-js:
+    uses: ./.github/workflows/pack-js-and-dependencies.yml
+    needs:
+      [check-conventional-commits, check-jira-tickets-commits, documentation]
+    with:
+      branch_name: ${{ github.head_ref }}
+    secrets:
+      gh_token: ${{ secrets.CICD_GITHUB_REPOSITORY_TOKEN }}
+
+  check-conventional-commits:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: pixel-systems/conventional-commits@v0.0.1
+        name: Ensure conventional commits
+        with:
+          base-branch: $GITHUB_BASE_REF
+          pr-branch: $GITHUB_HEAD_REF
+
+  check-jira-tickets-commits:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: pixel-systems/ensure-commits-message-jira-ticket@v0.0.1
+        name: Ensure Jira ticket in all commits
+        with:
+          base-branch: $GITHUB_BASE_REF
+          pr-branch: $GITHUB_HEAD_REF
+
+  documentation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v34.1.1
+        with:
+          files: "README.md"
+      - name: ensure-documentation-is-added
+        if: steps.changed-files.outputs.any_modified == 'false'
+        uses: actions/github-script@v6.3.3
+        with:
+          script: |
+            core.setFailed('Include documentation in the README.md file!')

@@ -1,0 +1,87 @@
+name: "terraform-plan"
+description: "plans a terraform configuration"
+inputs:
+  region:
+    description: "aws region name"
+    required: true
+  access-key:
+    description: "access key"
+    required: true
+  secret-key:
+    description: "secret key"
+    required: true
+  terraform-folder:
+    description: "folder where your terraform configuration is"
+    required: true
+  backend-configuration:
+    description: "file with additional backend configuration"
+    required: true
+  terraform-var-file:
+    description: "file with the terraform variables (.tfvars or .tfvars.json)"
+    required: true
+  terraform-plan-file:
+    description: "file where terraform will put the proposed plan"
+    required: true
+  destroy-mode:
+    description: "Plans a destroy action. false(default value)=>normal flow, true=>destroy mode."
+    required: false
+    default: 'false'
+  session-name:
+    description: "IAM session name that will tag your sts-assume-role operation."
+    required: false
+    default: 'undefined'
+  skip-summary-if-no-changes:
+    description: "flag to avoid adding a job summary if there are no changes in the infrastructure."
+    required: false
+    default: 'false'
+  skip-summary:
+    description: "flag to avoid adding a job summary."
+    required: false
+    default: 'false'
+outputs:
+  changes-detected:
+    description: 'resources to added'
+    value: ${{ steps.tf_plan.outputs.tf_detect_changes }}
+  resources-to-add:
+    description: 'resources to added'
+    value: ${{ steps.add_iac_changes_to_summary.outputs.resources_to_add }}
+  resources-to-change:
+    description: 'resources to change'
+    value: ${{ steps.add_iac_changes_to_summary.outputs.resources_to_change }}
+  resources-to-delete:
+    description: 'resources to delete'
+    value: ${{ steps.add_iac_changes_to_summary.outputs.resources_to_delete }}
+runs:
+  using: "composite"
+  steps:
+    - run: |
+        ${{ github.action_path }}/tfm-plan.sh \
+          -r "${{ inputs.region }}" \
+          -a "${{ inputs.access-key }}" \
+          -s "${{ inputs.secret-key }}" \
+          -t "${{ inputs.terraform-folder }}" \
+          -b "${{ inputs.backend-configuration }}" \
+          -v "${{ inputs.terraform-var-file }}" \
+          -p "${{ inputs.terraform-plan-file }}" \
+          -d "${{ inputs.destroy-mode }}" \
+          -n "${{ inputs.session-name }}"
+      id: tf_plan
+      shell: bash
+    - id: add_iac_changes_to_summary
+      if: ${{ steps.tf_plan.outputs.tf_detect_changes == 'true' }}
+      shell: bash
+      env:
+        TEMP_FILE: tf_plan.txt
+        SKIP_SUMMARY_IF_NO_CHANGES: ${{ inputs.skip-summary-if-no-changes }}
+        SKIP_SUMMARY: ${{ inputs.skip-summary }}
+      run: |
+        ${{ github.action_path }}/tf-show.sh \
+          -r "${{ inputs.region }}" \
+          -a "${{ inputs.access-key }}" \
+          -s "${{ inputs.secret-key }}" \
+          -t "${{ inputs.terraform-folder }}" \
+          -b "${{ inputs.backend-configuration }}" \
+          -p "${{ inputs.terraform-plan-file }}" \
+          -n "${{ inputs.session-name }}" >> $TEMP_FILE
+        node ${{ github.action_path }}/dist/index.js $TEMP_FILE
+      

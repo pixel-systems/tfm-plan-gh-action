@@ -1,0 +1,22 @@
+name: continuous-delivery
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  semver-changelog:
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.CICD_GITHUB_REPOSITORY_TOKEN }}
+          ref: main
+      - uses: ohpensource/generate-version-and-release-notes-gh-action@v1.0.1
+        name: semver & changelog
+        id: semver
+        with:
+          user-email: "github-svc@ohpen.com"
+          user-name: "GitHub Actions"
