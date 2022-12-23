@@ -37,7 +37,7 @@ terraform_init() {
 
 log_action "planning terraform"
 
-while getopts r:a:s:t:b:v:p:d:n: flag
+while getopts r:a:s:t:b:v:p:d:n:c: flag
 do
     case "${flag}" in
        r) region=${OPTARG};;
@@ -49,6 +49,7 @@ do
        p) tfplan_output=${OPTARG};;
        d) destroy_mode=${OPTARG};;
        n) session_name_value=${OPTARG};;
+       c) tfm_cloud=${OPTARG}
     esac
 done
 if [[ "${destroy_mode}" == '' ]]; then
@@ -62,6 +63,7 @@ log_key_value_pair "backend-config-file" "$backend_config_file"
 log_key_value_pair "tfvars-file" "$tfvars_file"
 log_key_value_pair "tfplan-output" "$tfplan_output"
 log_key_value_pair "destroy-mode" "$destroy_mode"
+log_key_value_pair "terraform-cloud" "$tfm_cloud"
 
 set_up_aws_user_credentials "$region" "$access_key" "$secret_key"
 
@@ -72,7 +74,11 @@ mkdir -p $(dirname $tfplan_output)
 
 folder="$working_folder/$tfm_folder"
 cd $folder
-    terraform_init $backend_config_file $session_name_value
+    if [ "$tfm_cloud" = "true" ]; then
+        terraform_init $session_name_value
+    else
+        terraform_init $backend_config_file $session_name_value
+    fi
     set +e  # disable stop running if exit code different from 0
     if [ "$destroy_mode" = "true" ]; then 
         terraform plan -destroy -var-file="$tfvars_file" -out="$tfplan_output" -detailed-exitcode

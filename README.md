@@ -1,6 +1,6 @@
 # TERRAFORM-PLAN-GH-ACTION
 
-Repository containing Ohpen's Github Action to plan Terraform configuration with Ohpen standard.
+Repository containing Pixel Systems's Github Action to plan Terraform configuration with Pixel Systems standard to AWS Account/s.
 
 - [TERRAFORM-PLAN-GH-ACTION](#TERRAFORM-PLAN-GH-ACTION)
   - [code-of-conduct](#code-of-conduct)
@@ -59,8 +59,8 @@ jobs:
         name: terraform plan
         with:
           region: $REGION
-          access-key: $COR_AWS_ACCESS_KEY_ID
-          secret-key: $COR_AWS_SECRET_ACCESS_KEY
+          access-key: $AWS_ACCESS_KEY_ID
+          secret-key: $AWS_SECRET_ACCESS_KEY
           terraform-folder: "deployment-folder/terraform"
           backend-configuration: "deployment-team-branch-conf/backend.tf"
           terraform-var-file: "deployment-team-branch-conf/terraform.tfvars"
@@ -97,8 +97,8 @@ jobs:
         name: terraform plan
         with:
           region: $REGION
-          access-key: $COR_AWS_ACCESS_KEY_ID
-          secret-key: $COR_AWS_SECRET_ACCESS_KEY
+          access-key: $AWS_ACCESS_KEY_ID
+          secret-key: $AWS_SECRET_ACCESS_KEY
           terraform-folder: "deployment-folder/terraform"
           backend-configuration: "deployment-team-branch-conf/backend.tf"
           terraform-var-file: "deployment-team-branch-conf/terraform.tfvars"
