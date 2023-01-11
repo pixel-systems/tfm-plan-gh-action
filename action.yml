@@ -39,7 +39,7 @@ inputs:
     required: false
     default: 'false'
   terraform-cloud:
-    description: "flag to set terraform execution against Terrafomr Cloud"
+    description: "flag to set terraform execution against Terraform Cloud"
     required: false
     default: 'false'
 outputs:
