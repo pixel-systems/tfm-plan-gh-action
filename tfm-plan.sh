@@ -49,7 +49,7 @@ do
        p) tfplan_output=${OPTARG};;
        d) destroy_mode=${OPTARG};;
        n) session_name_value=${OPTARG};;
-       c) tfm_cloud=${OPTARG}
+       c) terraform_cloud=${OPTARG}
     esac
 done
 if [[ "${destroy_mode}" == '' ]]; then
@@ -63,7 +63,7 @@ log_key_value_pair "backend-config-file" "$backend_config_file"
 log_key_value_pair "tfvars-file" "$tfvars_file"
 log_key_value_pair "tfplan-output" "$tfplan_output"
 log_key_value_pair "destroy-mode" "$destroy_mode"
-log_key_value_pair "terraform-cloud" "$tfm_cloud"
+log_key_value_pair "terraform-cloud" "$terraform_cloud"
 
 set_up_aws_user_credentials "$region" "$access_key" "$secret_key"
 
@@ -74,7 +74,7 @@ mkdir -p $(dirname $tfplan_output)
 
 folder="$working_folder/$tfm_folder"
 cd $folder
-    if [ "$tfm_cloud" = "true" ]; then
+    if [ "$terraform_cloud" = "true" ]; then
         terraform_init $session_name_value
     else
         terraform_init $backend_config_file $session_name_value
