@@ -127,3 +127,4 @@ The terraform plan is parsed by `./tf-show-parser/main.js` to extract the summar
 - **resources-to-change**: number of resources to be modified
 - **resources-to-delete**: number of resources to be deleted
 
+
