@@ -27,12 +27,19 @@ set_up_aws_user_credentials() {
 terraform_init() {
     backend_config_file=$1
     session_name_value=$2
+    terraform_cloud=$2
 
-    if [[ "${session_name_value}" == 'undefined' ]]; then
-        terraform init -backend-config="$backend_config_file"
+    if [ "${terraform_cloud}" == "true" ]; then
+        terraform_init
     else
-        terraform init -backend-config="$backend_config_file" -backend-config="session_name=$session_name_value"
+        if [[ "${session_name_value}" == 'undefined' ]]; then
+        terraform init -backend-config="$backend_config_file"
+        else
+            terraform init -backend-config="$backend_config_file" -backend-config="session_name=$session_name_value"
+        fi
     fi
+
+    
 }
 
 log_action "planning terraform"
@@ -74,11 +81,9 @@ mkdir -p $(dirname $tfplan_output)
 
 folder="$working_folder/$tfm_folder"
 cd $folder
-    if [ "$terraform_cloud" = "true" ]; then
-        terraform_init $session_name_value
-    else
-        terraform_init $backend_config_file $session_name_value
-    fi
+
+    terraform_init $backend_config_file $session_name_value $terraform_cloud
+
     set +e  # disable stop running if exit code different from 0
     if [ "$destroy_mode" = "true" ]; then 
         terraform plan -destroy -var-file="$tfvars_file" -out="$tfplan_output" -detailed-exitcode
