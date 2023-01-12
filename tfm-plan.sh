@@ -27,18 +27,19 @@ set_up_aws_user_credentials() {
 terraform_init() {
     backend_config_file=$1
     session_name_value=$2
-    terraform_cloud=$2
+    terraform_cloud=$3
 
-    if [ "${terraform_cloud}" == "true" ]; then
-        terraform_init
+    if [[ "${terraform_cloud}" == 'true' ]]; then
+        echo "tfm_cloud is TRUE"
+        terraform init
     else
+        echo "tfm_cloud is FALSE"
         if [[ "${session_name_value}" == 'undefined' ]]; then
-        terraform init -backend-config="$backend_config_file"
+            terraform init -backend-config="$backend_config_file"
         else
             terraform init -backend-config="$backend_config_file" -backend-config="session_name=$session_name_value"
         fi
     fi
-
     
 }
 
